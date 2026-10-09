@@ -1,4 +1,4 @@
-// Leitura do contrato no navegador, sem IA e sem custo: pdf.js extrai texto de PDF; Tesseract.js faz OCR de fotos
+// Leitura do contrato no navegador, sem IA e sem servidor: pdf.js extrai texto de PDF; Tesseract.js faz OCR de fotos
 // e de PDFs escaneados ou com camada de texto corrompida (fontes sem mapa de caracteres, comum em CCBs).
 // O arquivo não sai do aparelho do cliente; só os campos encontrados vão para a análise.
 (function () {
