@@ -4,7 +4,7 @@ const WHATSAPP = "5551994875212"; // WhatsApp que recebe os leads (DDI 55 + DDD 
 const MAX_TOTAL = 4.5 * 1024 * 1024;
 const MAX_FILES = 8;
 const BASE = document.querySelector('meta[name="base"]')?.content || ""; // ex.: "/analise" (definido no build)
-// Em teixeiraefranzen.com.br a API é chamada direto no site do Netlify (meta name="api"); em *.netlify.app (deploys de teste) usa a própria origem.
+// Sem servidor: nada é chamado no Netlify.
 // Sem servidor: a análise roda no navegador (analise.js) e os contatos vão para o Google Drive do escritório (drive/Code.gs), quando configurado.
 const API = null;
 const LEITURA = (document.querySelector('meta[name="leitura"]')?.content || "on") === "on"; // leitura de PDF/foto desligada = só dados digitados
