@@ -174,3 +174,5 @@ footer .footer-logo { height: 34px; margin-bottom: 14px; }
 details.manual.sempre { border-top: 0; padding-top: 0; margin-top: 0; }
 details.manual.sempre summary { pointer-events: none; font-family: var(--sans); font-size: 12px; letter-spacing: 1.2px; text-transform: uppercase; color: var(--navy); }
 details.manual.sempre summary::before { content: ""; width: 0; }
+
+.oculto { filter: blur(7px); user-select: none; pointer-events: none; }

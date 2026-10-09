@@ -134,19 +134,19 @@
       <ul class="achados blur" id="res-achados"></ul>
       <div class="overlay"><div>
         <strong id="lock-titulo">Demonstrativo completo</strong>
-        <p class="hint">Detalhes de cada ponto e a base legal. Um clique para liberar.</p>
-        <a class="btn gold" href="#lead">Liberar demonstrativo</a>
+        <p class="hint">Os valores, a média oficial do Banco Central e o detalhamento de cada ponto ficam ocultos até você concluir o cadastro. Leva 20 segundos e não tem custo.</p>
+        <a class="btn gold" href="#lead">Concluir cadastro e liberar</a>
       </div></div>
     </div>
     <p class="aviso" id="res-aviso"></p>
   </section>
 
   <section class="card hidden" id="lead">
-    <h2>Liberar demonstrativo completo</h2>
-    <p class="intro">Sem compromisso. Se quiser, a equipe confere a análise e tira dúvidas pelo WhatsApp que você informou.</p>
+    <h2>Conclua o cadastro para liberar o demonstrativo</h2>
+    <p class="intro">Você verá os valores, a média oficial do Banco Central do mês do contrato e o detalhamento de cada ponto. Sem compromisso: a equipe só entra em contato se você autorizar.</p>
     <form id="form-lead" novalidate>
       <div class="grid">
-        <div><label for="email">E-mail <small>(opcional, para receber o demonstrativo)</small></label><input type="email" id="email" name="email" autocomplete="email"></div>
+        <div><label for="email">E-mail</label><input type="email" id="email" name="email" autocomplete="email" required placeholder="seu@email.com"></div>
         <div><label for="cidade_lead">Cidade <small>(opcional)</small></label><input type="text" id="cidade_lead" name="cidade" autocomplete="address-level2"></div>
       </div>
       <label class="check">

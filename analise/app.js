@@ -221,6 +221,7 @@ const DRIVE_URL = document.querySelector('meta[name="drive"]')?.content || "";
 const DRIVE_TOKEN = document.querySelector('meta[name="drive-token"]')?.content || "";
 let driveEnviado = "";
 let completoLocal = null;
+let comparacaoCompleta = ""; // HTML da comparação com os números visíveis (liberado após o cadastro)
 // Etapas do funil (pré-cadastro, lead, pediu_valor): registradas no Drive quando o script estiver configurado.
 function enviarEtapa(etapa, extra = {}) {
   if (!DRIVE_URL || !dadosPre.nome) return;
@@ -249,15 +250,16 @@ function renderResultado(res) {
 
   const c = p.comparacao;
   let html = "";
+  const oc = (v) => `<span class="oculto">${v}</span>`; // número borrado até liberar o demonstrativo
   if (c) {
     const largura = Math.min(100, (c.razao / 2.55) * 100); // a marca de 2/3 da barra = 1,7x
     html += `<div class="compare">
       <div class="box"><small>Taxa do seu contrato</small><b>${pct(c.taxaContrato)} a.m.</b></div>
       <div class="vs">vs</div>
-      <div class="box"><small>Média do Banco Central<br>${esc(c.modalidade)}, ${esc((c.referencia || "").slice(3))}</small><b>${pct(c.taxaMedia)} a.m.</b></div>
+      <div class="box"><small>Média do Banco Central<br>${esc(c.modalidade)}, ${esc((c.referencia || "").slice(3))}</small><b>${oc(pct(c.taxaMedia))} a.m.</b></div>
     </div>
     <div class="bar"><i style="width:${largura}%"></i></div>
-    <p class="hint">Sua taxa equivale a <b>${String(c.razao).replace(".", ",")}x</b> a média. A linha marca 1,7x (70% acima da média), parâmetro de abusividade adotado na análise. Venda casada e tarifas indevidas são indícios por si sós.${c.exata ? "" : " Média do mês mais próximo disponível."}${c.origemTipo === "contrato" ? "" : " Modalidade considerada a partir da sua escolha."}</p>`;
+    <p class="hint">Sua taxa equivale a <b>${oc(String(c.razao).replace(".", ",") + "x")}</b> a média. A linha marca 1,7x (70% acima da média), parâmetro de abusividade adotado na análise. Venda casada e tarifas indevidas são indícios por si sós.${c.exata ? "" : " Média do mês mais próximo disponível."}${c.origemTipo === "contrato" ? "" : " Modalidade considerada a partir da sua escolha."}</p>`;
   } else {
     html += `<p class="hint">Não foi possível comparar a taxa com a média do Banco Central (taxa não identificada ou série indisponível).</p>`;
   }
@@ -266,15 +268,22 @@ function renderResultado(res) {
   if (p.tipoContrato) extras.push(`Modalidade: <b>${esc(TIPOS[p.tipoContrato] || p.tipoContrato)}</b>`);
   if (p.legibilidade && p.legibilidade !== "boa") extras.push(`Leitura do documento: <b>${p.legibilidade}</b> (uma foto mais nítida melhora o resultado)`);
   if (extras.length) html += `<p class="hint">${extras.join(" · ")}</p>`;
+  comparacaoCompleta = html.replace(/<span class="oculto">([^<]*)<\/span>/g, "$1");
   $("#res-comparacao").innerHTML = html;
 
   const ach = p.titulosAchados || [];
   $("#res-achados").innerHTML = ach.length
     ? ach.map((a) => `<li class="${a.gravidade}"><b>${esc(a.titulo)}</b><p>Detalhes, base legal e o que fazer estão no demonstrativo completo.</p></li>`).join("")
     : `<li class="info"><b>Nenhum ponto de atenção além da comparação de juros.</b><p>O demonstrativo traz os dados lidos e as observações.</p></li>`;
+  const tipos = [];
+  if (ach.some((a) => /juros/i.test(a.titulo))) tipos.push("juros acima da média");
+  if (p.contagem?.vendaCasada) tipos.push("possível venda casada");
+  if (ach.some((a) => /tarifa|registro|terceiros/i.test(a.titulo))) tipos.push("tarifas a conferir");
   $("#lock-titulo").textContent = ach.length
-    ? `${ach.length} ponto${ach.length > 1 ? "s" : ""} encontrado${ach.length > 1 ? "s" : ""}${p.contagem?.vendaCasada ? ", incluindo possível venda casada" : ""}`
+    ? `${ach.length} ponto${ach.length > 1 ? "s" : ""} encontrado${ach.length > 1 ? "s" : ""}${tipos.length ? ": " + tipos.join(", ") : ""}`
     : "Demonstrativo completo";
+  const lockHint = document.querySelector("#res-achados-box .overlay p.hint");
+  if (lockHint) lockHint.textContent = "Os valores, a média oficial do Banco Central e o detalhamento de cada ponto ficam ocultos até você concluir o cadastro. Leva 20 segundos e não tem custo.";
   $("#res-aviso").textContent = p.aviso;
   show($("#resultado")); show($("#lead"));
   $("#resultado").scrollIntoView({ behavior: "smooth" });
@@ -288,6 +297,7 @@ $("#form-lead").addEventListener("submit", async (ev) => {
   const body = Object.fromEntries(new FormData(ev.target).entries());
   body.id = analiseId; body.nome = dadosPre.nome; body.telefone = dadosPre.telefone; body.consentimento = $("#consentimento").checked; body.utm = getUtm(); body.site = $("#site").value;
   if (!body.consentimento) return mostrarErro(erro, "É preciso autorizar o contato para liberar o demonstrativo.");
+  if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test((body.email || "").trim())) return mostrarErro(erro, "Informe um e-mail válido para concluir o cadastro e liberar o demonstrativo.");
   $("#btn-lead").disabled = true;
   try {
     if (!completoLocal) throw new Error("faça a análise primeiro");
@@ -309,6 +319,7 @@ function renderDemonstrativo(c, lead) {
   hide($("#lead"));
   $("#res-achados").classList.remove("blur");
   $("#res-achados-box").querySelector(".overlay")?.remove();
+  if (comparacaoCompleta) $("#res-comparacao").innerHTML = comparacaoCompleta;
   $("#dem-intro").textContent = `${lead.nome.trim().split(" ")[0]}, este é o demonstrativo da análise automatizada. Ele serve para orientar a conversa com a equipe, se você quiser esclarecer os pontos encontrados.`;
 
 
