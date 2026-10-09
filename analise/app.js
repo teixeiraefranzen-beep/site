@@ -83,7 +83,7 @@ async function addFiles(files) {
   lerNoNavegador();
 }
 
-// ---------- leitura no navegador (sem IA, sem custo): pdf.js + OCR; só os campos vão ao servidor ----------
+// ---------- leitura no navegador (sem IA): pdf.js + OCR; só os campos vão ao servidor ----------
 let extracao = null;
 const statusLeitura = document.getElementById("leitura-status");
 function setStatus(msg) { if (statusLeitura) { statusLeitura.textContent = msg; statusLeitura.classList.toggle("hidden", !msg); } }
@@ -286,7 +286,7 @@ function renderResultado(res) {
     ? `${ach.length} ponto${ach.length > 1 ? "s" : ""} encontrado${ach.length > 1 ? "s" : ""}${tipos.length ? ": " + tipos.join(", ") : ""}`
     : "Demonstrativo completo";
   const lockHint = document.querySelector("#res-achados-box .overlay p.hint");
-  if (lockHint) lockHint.textContent = "Os valores, a média oficial do Banco Central e o detalhamento de cada ponto ficam ocultos até você concluir o cadastro. Leva 20 segundos e não tem custo.";
+  if (lockHint) lockHint.textContent = "Os valores, a média oficial do Banco Central e o detalhamento de cada ponto ficam ocultos até você concluir o cadastro. Leva 20 segundos.";
   $("#res-aviso").textContent = p.aviso;
   show($("#resultado")); show($("#lead"));
   $("#resultado").scrollIntoView({ behavior: "smooth" });
