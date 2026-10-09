@@ -343,8 +343,8 @@ function renderDemonstrativo(c, lead) {
   $("#dem-obs").textContent = [x.observacoes, x.campos_nao_encontrados?.length ? "Não identificado no documento: " + x.campos_nao_encontrados.join(", ") : ""].filter(Boolean).join(" ");
   $("#dem-aviso").textContent = r.aviso;
 
-  // Quanto está em jogo: números borrados na tela, entregues só na conversa pelo WhatsApp
-  const imp = r.impacto || {}, oc = (v) => `<span class="oculto">${v}</span>`;
+  // Quanto está em jogo: estimativa visível para incentivar o contato e o envio dos documentos
+  const imp = r.impacto || {}, oc = (v) => v;
   const tiles = [];
   if (imp.parcelaRecalculada) tiles.push(`<div class="tile"><small>Parcela recalculada com a média do BCB</small><b>de ${brl(imp.parcelaAtual)} para ${oc(brl(imp.parcelaRecalculada))}</b></div>`);
   if (imp.economiaJuros > 0) tiles.push(`<div class="tile"><small>Juros pagos a mais em ${imp.n} parcelas</small><b>${oc(brl(imp.economiaJuros))}</b></div>`);
@@ -357,7 +357,7 @@ function renderDemonstrativo(c, lead) {
   const montarHref = () => {
     const comp = r.comparacao ? ` Taxa ${String(r.comparacao.taxaContrato).replace(".", ",")}% a.m. x média BCB ${String(r.comparacao.taxaMedia).replace(".", ",")}% (${String(r.comparacao.razao).replace(".", ",")}x).` : "";
     const pontos = (r.achados || []).filter((a) => a.gravidade !== "info").map((a) => a.titulo).slice(0, 4).join("; ");
-    const texto = `Olá! Fiz a análise do meu contrato no site (${TIPOS[r.tipoContratoConsiderado] || "contrato"}${x.instituicao ? ", " + x.instituicao : ""}; resultado: ${r.semaforo}).${comp}${pontos ? " Pontos: " + pontos + "." : ""} Quero receber o cálculo do que está em jogo. Meu nome é ${lead.nome}, WhatsApp ${dadosPre.telefone}.${pastaDrive ? " Pasta no Drive: " + pastaDrive : ""}`;
+    const texto = `Olá! Fiz a análise do meu contrato no site (${TIPOS[r.tipoContratoConsiderado] || "contrato"}${x.instituicao ? ", " + x.instituicao : ""}; resultado: ${r.semaforo}).${comp}${pontos ? " Pontos: " + pontos + "." : ""}${imp.total > 0 ? " Estimativa em jogo: " + brl(imp.total) + "." : ""} Quero confirmar o cálculo e enviar os documentos. Meu nome é ${lead.nome}, WhatsApp ${dadosPre.telefone}.${pastaDrive ? " Pasta no Drive: " + pastaDrive : ""}`;
     return `https://wa.me/${WHATSAPP}?text=${encodeURIComponent(texto)}`;
   };
   btn.href = montarHref();
