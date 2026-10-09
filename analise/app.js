@@ -238,7 +238,7 @@ function enviarParaDrive(dados, resultado) {
     arquivos: arquivos.filter((a) => /^(application\/pdf|image\/(jpeg|png|webp|heic|heif)|text\/plain|application\/vnd\.openxmlformats-officedocument\.wordprocessingml\.document)$/.test(a.mime) && /\.(pdf|jpe?g|png|webp|heic|heif|txt|docx)$/i.test(a.nome)).slice(0, 8).map(({ nome, mime, base64 }) => ({ nome, mime, base64 })) };
   if (corpo.arquivos.reduce((t, a) => t + a.base64.length, 0) > 4.5 * 1024 * 1024 * 1.37) corpo.arquivos = corpo.arquivos.slice(0, 1);
   // text/plain evita o preflight CORS, que o Apps Script não responde
-  fetch(DRIVE_URL, { method: "POST", body: JSON.stringify(corpo), redirect: "follow" }).then((r) => r.json()).then((j) => { if (!j.ok) console.warn("drive", j.erro); else pastaDrive = j.pasta || ""; }).catch((e) => console.warn("drive", e));
+  fetch(DRIVE_URL, { method: "POST", body: JSON.stringify(corpo), redirect: "follow" }).then((r) => r.json()).then((j) => { if (!j.ok) console.warn("drive", j.erro); else { pastaDrive = j.pasta || ""; document.dispatchEvent(new Event("drive-pronto")); } }).catch((e) => console.warn("drive", e));
 }
 
 function setStep(n) { for (let i = 1; i <= 4; i++) $("#ps" + i).classList.toggle("on", i <= n); }
@@ -361,6 +361,7 @@ function renderDemonstrativo(c, lead) {
     return `https://wa.me/${WHATSAPP}?text=${encodeURIComponent(texto)}`;
   };
   btn.href = montarHref();
+  document.addEventListener("drive-pronto", () => { btn.href = montarHref(); }, { once: true });
   btn.onclick = () => {
     btn.href = montarHref(); // inclui o link da pasta se o Drive já respondeu
     const interesse = $("#interesse_rep").checked;
