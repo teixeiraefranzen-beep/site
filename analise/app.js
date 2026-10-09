@@ -220,6 +220,7 @@ $("#form-analise").addEventListener("input", (e) => { if (publico && ["arquivos"
 const DRIVE_URL = document.querySelector('meta[name="drive"]')?.content || "";
 const DRIVE_TOKEN = document.querySelector('meta[name="drive-token"]')?.content || "";
 let driveEnviado = "";
+let pastaDrive = ""; // link da pasta criada no Drive do escritório (vai na mensagem do WhatsApp)
 let completoLocal = null;
 let comparacaoCompleta = ""; // HTML da comparação com os números visíveis (liberado após o cadastro)
 // Etapas do funil (pré-cadastro, lead, pediu_valor): registradas no Drive quando o script estiver configurado.
@@ -235,7 +236,7 @@ function enviarParaDrive(dados, resultado) {
     tipoInformado: dados.tipo_contrato, utm: getUtm(), dados, extracao, resultado,
     arquivos: arquivos.map(({ nome, mime, base64 }) => ({ nome, mime, base64 })) };
   // text/plain evita o preflight CORS, que o Apps Script não responde
-  fetch(DRIVE_URL, { method: "POST", body: JSON.stringify(corpo), redirect: "follow" }).then((r) => r.json()).then((j) => { if (!j.ok) console.warn("drive", j.erro); }).catch((e) => console.warn("drive", e));
+  fetch(DRIVE_URL, { method: "POST", body: JSON.stringify(corpo), redirect: "follow" }).then((r) => r.json()).then((j) => { if (!j.ok) console.warn("drive", j.erro); else pastaDrive = j.pasta || ""; }).catch((e) => console.warn("drive", e));
 }
 
 function setStep(n) { for (let i = 1; i <= 4; i++) $("#ps" + i).classList.toggle("on", i <= n); }
@@ -340,10 +341,26 @@ function renderDemonstrativo(c, lead) {
   $("#dem-obs").textContent = [x.observacoes, x.campos_nao_encontrados?.length ? "Não identificado no documento: " + x.campos_nao_encontrados.join(", ") : ""].filter(Boolean).join(" ");
   $("#dem-aviso").textContent = r.aviso;
 
-  const msg = encodeURIComponent(`Olá! Fiz a análise do meu contrato no site (${TIPOS[r.tipoContratoConsiderado] || "contrato"}, resultado: ${r.semaforo}) e quero saber o valor. Meu nome é ${lead.nome}.`);
+  // Quanto está em jogo: números borrados na tela, entregues só na conversa pelo WhatsApp
+  const imp = r.impacto || {}, oc = (v) => `<span class="oculto">${v}</span>`;
+  const tiles = [];
+  if (imp.parcelaRecalculada) tiles.push(`<div class="tile"><small>Parcela recalculada com a média do BCB</small><b>de ${brl(imp.parcelaAtual)} para ${oc(brl(imp.parcelaRecalculada))}</b></div>`);
+  if (imp.economiaJuros > 0) tiles.push(`<div class="tile"><small>Juros pagos a mais em ${imp.n} parcelas</small><b>${oc(brl(imp.economiaJuros))}</b></div>`);
+  if (imp.encargosComJuros > 0) tiles.push(`<div class="tile"><small>Tarifas e seguros embutidos, com os juros do prazo</small><b>${oc(brl(imp.encargosComJuros))}</b></div>`);
+  if (imp.total > 0) tiles.push(`<div class="tile destaque"><small>Estimativa total em jogo</small><b>${oc(brl(imp.total))}</b></div>`);
+  const caixa = $("#dem-impacto");
+  if (caixa) caixa.innerHTML = tiles.length ? `<div class="impacto">${tiles.join("")}</div><p class="hint-claro">Estimativa informativa calculada com a média oficial do Banco Central e a Tabela Price. O valor exato depende da conferência do contrato por advogado e das parcelas já pagas.</p>` : "";
+  const msg = encodeURIComponent(`Olá! Fiz a análise do meu contrato no site (${TIPOS[r.tipoContratoConsiderado] || "contrato"}, resultado: ${r.semaforo}${imp.total > 0 ? ", com estimativa calculada" : ""}) e quero receber o cálculo do que está em jogo. Meu nome é ${lead.nome}.`);
   const btn = $("#btn-whats");
-  btn.href = `https://wa.me/${WHATSAPP}?text=${msg}`;
+  const montarHref = () => {
+    const comp = r.comparacao ? ` Taxa ${String(r.comparacao.taxaContrato).replace(".", ",")}% a.m. x média BCB ${String(r.comparacao.taxaMedia).replace(".", ",")}% (${String(r.comparacao.razao).replace(".", ",")}x).` : "";
+    const pontos = (r.achados || []).filter((a) => a.gravidade !== "info").map((a) => a.titulo).slice(0, 4).join("; ");
+    const texto = `Olá! Fiz a análise do meu contrato no site (${TIPOS[r.tipoContratoConsiderado] || "contrato"}${x.instituicao ? ", " + x.instituicao : ""}; resultado: ${r.semaforo}).${comp}${pontos ? " Pontos: " + pontos + "." : ""} Quero receber o cálculo do que está em jogo. Meu nome é ${lead.nome}, WhatsApp ${dadosPre.telefone}.${pastaDrive ? " Pasta no Drive: " + pastaDrive : ""}`;
+    return `https://wa.me/${WHATSAPP}?text=${encodeURIComponent(texto)}`;
+  };
+  btn.href = montarHref();
   btn.onclick = () => {
+    btn.href = montarHref(); // inclui o link da pasta se o Drive já respondeu
     const interesse = $("#interesse_rep").checked;
     enviarEtapa("pediu_valor", { interesseRepresentacao: interesse });
     if (window.gtag) gtag("event", "pediu_valor", { interesse_representacao: interesse });

@@ -137,7 +137,8 @@ export async function analisar(x) {
     verde: "Não encontramos indícios relevantes de abusividade nos dados analisados.",
   }[semaforo];
 
-  const resultado = { semaforo, resumo, achados, aviso: AVISO, tipoContratoConsiderado: x.tipo_contrato, comparacao };
+  const impacto = estimarImpacto(x, mercado, seguros.concat(rmc), [].concat(cadastro, avaliacao, registro, terceiros));
+  const resultado = { semaforo, resumo, achados, aviso: AVISO, tipoContratoConsiderado: x.tipo_contrato, comparacao, impacto };
   const publico = {
     semaforo, resumo, comparacao, contagem,
     titulosAchados: achados.filter((a) => a.gravidade !== "info").map((a) => ({ titulo: a.titulo, gravidade: a.gravidade })),
@@ -145,4 +146,25 @@ export async function analisar(x) {
   };
   const mercadoPub = mercado ? { taxaMensal: mercado.taxaMensal, nome: mercado.nome, dataReferencia: mercado.dataReferencia, codigo: mercado.codigo } : null;
   return { publico, resultado, mercado: mercadoPub };
+}
+
+/** Estimativa informativa do que está em jogo (Tabela Price), entregue só na conversa com a equipe. */
+function estimarImpacto(x, mercado, acessorios, tarifas) {
+  const n = x.numero_parcelas, iC = x.taxa_juros_mensal != null ? x.taxa_juros_mensal / 100 : null;
+  const pmt = (pv, i, n) => (i > 0 ? pv * i / (1 - Math.pow(1 + i, -n)) : pv / n);
+  const r2 = (v) => Math.round(v * 100) / 100;
+  const out = { n: n || null };
+  if (n > 0 && iC != null) {
+    const pv = x.valor_financiado > 0 ? x.valor_financiado : (x.valor_parcela > 0 ? x.valor_parcela * (1 - Math.pow(1 + iC, -n)) / iC : null);
+    const parcelaAtual = x.valor_parcela > 0 ? x.valor_parcela : (pv ? pmt(pv, iC, n) : null);
+    if (pv && parcelaAtual && mercado && mercado.taxaMensal / 100 < iC) {
+      const iM = mercado.taxaMensal / 100;
+      const parcelaMedia = pmt(pv, iM, n);
+      out.parcelaAtual = r2(parcelaAtual); out.parcelaRecalculada = r2(parcelaMedia); out.economiaJuros = r2((parcelaAtual - parcelaMedia) * n);
+    }
+    const encargos = [...acessorios, ...tarifas].reduce((t, i) => t + (i.valor > 0 ? i.valor : 0), 0);
+    if (encargos > 0) { out.encargos = r2(encargos); out.encargosComJuros = r2(pmt(encargos, iC, n) * n); }
+  }
+  out.total = r2((out.economiaJuros || 0) + (out.encargosComJuros || 0));
+  return out;
 }
