@@ -1,0 +1,6 @@
+User-agent: *
+Allow: /
+Disallow: /analise/api/
+Disallow: /.netlify/
+
+Sitemap: https://teixeiraefranzen.com.br/sitemap.xml
