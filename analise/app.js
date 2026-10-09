@@ -234,7 +234,9 @@ function enviarParaDrive(dados, resultado) {
   driveEnviado = analiseId;
   const corpo = { token: DRIVE_TOKEN, id: analiseId, nome: dadosPre.nome, telefone: dadosPre.telefone, email: $("#email")?.value || "", cidade: $("#cidade_lead")?.value || dados.cidade || "",
     tipoInformado: dados.tipo_contrato, utm: getUtm(), dados, extracao, resultado,
-    arquivos: arquivos.map(({ nome, mime, base64 }) => ({ nome, mime, base64 })) };
+    // Só tipos esperados vão ao Drive (PDF, imagem, DOCX, TXT), até 4,5 MB no total; executáveis e outros formatos são descartados.
+    arquivos: arquivos.filter((a) => /^(application\/pdf|image\/(jpeg|png|webp|heic|heif)|text\/plain|application\/vnd\.openxmlformats-officedocument\.wordprocessingml\.document)$/.test(a.mime) && /\.(pdf|jpe?g|png|webp|heic|heif|txt|docx)$/i.test(a.nome)).slice(0, 8).map(({ nome, mime, base64 }) => ({ nome, mime, base64 })) };
+  if (corpo.arquivos.reduce((t, a) => t + a.base64.length, 0) > 4.5 * 1024 * 1024 * 1.37) corpo.arquivos = corpo.arquivos.slice(0, 1);
   // text/plain evita o preflight CORS, que o Apps Script não responde
   fetch(DRIVE_URL, { method: "POST", body: JSON.stringify(corpo), redirect: "follow" }).then((r) => r.json()).then((j) => { if (!j.ok) console.warn("drive", j.erro); else pastaDrive = j.pasta || ""; }).catch((e) => console.warn("drive", e));
 }
