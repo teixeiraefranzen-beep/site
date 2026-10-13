@@ -208,12 +208,8 @@ fbq('init','1803694604287234');fbq('track','PageView');
 
 <main>
 <!-- Formulário auxiliar para contatos que abandonam no meio (detectado pelo Netlify no deploy) -->
-<form hidden method='post' name='indenizatoria-contato'><input type='hidden' name='form-name' value='indenizatoria-contato' />
-  <input name="atendimento"><input name="nome"><input name="whatsapp"><input name="origem"><input name="bot-field">
-</form>
 
 <form enctype='multipart/form-data' id='f' method='POST' name='indenizatoria' novalidate>
-<input type="hidden" name="form-name" value="indenizatoria">
 <input type="hidden" name="ficha">
 <p class="bot"><label>Não preencha: <input name="bot-field"></label></p>
 <input type="hidden" name="atendimento"><input type="hidden" name="classificacao"><input type="hidden" name="marcadores">
@@ -406,7 +402,10 @@ const CONFIG = {
   diasUteis: [1,2,3,4,5],              // 0=domingo … 6=sábado
   maxImagemPx: 1800,                   // imagens maiores são reduzidas antes do envio
   audioMaxSeg: 300,
-  hostsPublicados: /(^|\.)teixeiraefranzen\.com\.br$|\.netlify\.app$/
+  hostsPublicados: /(^|\.)teixeiraefranzen\.com\.br$|\.github\.io$/,
+  drive: 'https://script.google.com/macros/s/AKfycbxZd7iqqzKLZyDzHvjwPugHf5uwF-8WeiWiw2-FHoq3_Q_t8REwtnDy1IOhe8uzhBligQ/exec', // Apps Script que cria a pasta no Drive
+  driveToken: 'b083005328afc763a32c98c42f25997f',
+  maxTotalMB: 20                        // limite dos anexos somados (áudio incluído)
 };
 /* ===================================== */
 
@@ -680,23 +679,45 @@ async function montar(){
   if (audioBlob) { const ext = (audioBlob.type.split('/')[1] || 'webm').split(';')[0]; fd.append('arq_audio', audioBlob, 'relato-' + numero + '.' + ext); }
   return fd;
 }
+const TIPOS_OK = /^(application\/pdf|image\/(jpeg|png|webp|heic|heif)|audio\/[\w.+-]+|video\/(webm|mp4)|text\/plain)$/;
+const b64 = file => new Promise((res, rej) => { const r = new FileReader(); r.onload = () => res(String(r.result).split(',')[1] || ''); r.onerror = rej; r.readAsDataURL(file); });
+let pastaDrive = '';
+async function payload(fd){
+  const dados = {}, arquivos = []; let total = 0;
+  for (const [k, v] of fd.entries()) {
+    if (v instanceof File) {
+      if (!v.size) continue;
+      const mime = (v.type || '').split(';')[0]; if (!TIPOS_OK.test(mime)) throw new Error('tipo de arquivo não aceito: ' + v.name);
+      total += v.size; if (total > CONFIG.maxTotalMB * 1024 * 1024) throw new Error('anexos acima de ' + CONFIG.maxTotalMB + ' MB');
+      arquivos.push({ nome: (ARQS[k] ? ARQS[k] + ' - ' : '') + v.name, mime, base64: await b64(v) });
+    } else if (!['form-name', 'bot-field', 'ficha', 'resumo'].includes(k)) dados[k] = v;
+  }
+  return { token: CONFIG.driveToken, site: 'indenizatoria', id: numero, nome: field('nome'), telefone: field('whatsapp'), email: field('email'), ficha: fd.get('ficha'), resumo: fd.get('resumo'), dados, arquivos };
+}
+const resumoComPasta = () => f.elements.resumo.value + (pastaDrive ? '\nPasta no Drive: ' + pastaDrive : '');
 async function enviar(){
   const btn = $('#send'); btn.disabled = true; btn.textContent = 'Enviando…';
   try {
     const fd = await montar();
     if (DEMO) { await new Promise(r => setTimeout(r, 700)); }
     else {
-      const r = await fetch(location.pathname, {method:'POST', body: fd});
+      const corpo = await payload(fd);
+      // text/plain evita o preflight CORS, que o Apps Script não responde
+      const r = await fetch(CONFIG.drive, {method:'POST', body: JSON.stringify(corpo), redirect:'follow'});
       if (!r.ok) throw new Error('status ' + r.status);
+      const j = await r.json();
+      if (!j.ok) throw new Error(j.erro || 'falha no envio');
+      pastaDrive = j.pasta || '';
     }
     done = true; try { localStorage.removeItem(KEY); } catch(e){}
     try { if (window.fbq) fbq('track', 'Lead', {content_name: f.elements.classificacao.value}, {eventID: numero}); } catch(e){}
     $('#proto').textContent = '#' + numero;
-    $('#waBtn').href = waLink(f.elements.resumo.value);
+    $('#waBtn').href = waLink(resumoComPasta());
     $('#prazo').textContent = textoPrazo();
     $('#demo').classList.toggle('hide', !DEMO);
     show($('#done'));
   } catch (err) {
+    console.warn('envio', err);
     $('#waErr').href = waLink(f.elements.resumo.value);
     show($('#erro'));
   } finally { btn.disabled = false; btn.textContent = 'Enviar meu caso'; }
@@ -713,8 +734,8 @@ function enviarContato(){
   if (DEMO || chave === contatoEnviado) return;
   try { if (window.fbq) fbq('trackCustom', 'IniciouFormulario'); } catch(e){}
   contatoEnviado = chave;
-  const b = new URLSearchParams({'form-name':'indenizatoria-contato', atendimento: numero, nome, whatsapp: whats, origem: ORIGEM});
-  fetch(location.pathname, {method:'POST', headers:{'Content-Type':'application/x-www-form-urlencoded'}, body: b.toString(), keepalive: true}).catch(() => { contatoEnviado = ''; });
+  const corpo = { token: CONFIG.driveToken, site: 'indenizatoria', soEtapa: true, etapa: 'contato', id: numero, nome, telefone: whats, tipoInformado: ORIGEM };
+  fetch(CONFIG.drive, {method:'POST', body: JSON.stringify(corpo), redirect:'follow', keepalive: true}).catch(() => { contatoEnviado = ''; });
 }
 
 /* ---------- progresso salvo (sem anexos) ---------- */
