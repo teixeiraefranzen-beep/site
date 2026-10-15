@@ -33,6 +33,7 @@ input.erro{border-color:var(--error)}
 .dica{font-size:13px;color:var(--muted);margin:6px 0 0}
 .btn{display:flex;align-items:center;justify-content:center;width:100%;border:0;border-radius:10px;padding:16px;font-size:18px;font-weight:600;cursor:pointer;background:var(--blue);color:#fff;text-decoration:none;transition:opacity .2s}
 .btn:disabled{opacity:.6;cursor:default}
+.btn.wa{background:#25D366;font-size:15px;padding:11px;margin-top:10px}
 .btn.sec{background:transparent;color:var(--blue);border:1px solid var(--line);margin-top:12px;font-weight:500;font-size:16px}
 .op{display:block;width:100%;text-align:left;border:1px solid var(--line);background:#fff;border-radius:10px;padding:13px 14px;font-size:17px;margin:0 0 8px;cursor:pointer}
 .op:hover{border-color:var(--blue);background:var(--blue-soft)}
@@ -221,7 +222,9 @@ details p b{display:block;font-size:13px;color:var(--muted);font-weight:600;marg
     c.appendChild(el("p", "fr", p.oQue));
 
     if (p.precisa) {
-      var pr = el("div", "precisa"); pr.appendChild(el("b", "", "Precisamos de você")); pr.appendChild(document.createTextNode(p.precisa)); c.appendChild(pr);
+      var pr = el("div", "precisa"); pr.appendChild(el("b", "", "Precisamos de você")); pr.appendChild(document.createTextNode(p.precisa));
+      var wa = el("a", "btn wa"); wa.href = "https://wa.me/555132112711?text=" + encodeURIComponent("Olá! Sobre o processo " + p.apelido + " (" + p.processo + "): ");
+      wa.textContent = "Falar com o escritório sobre este processo"; pr.appendChild(wa); c.appendChild(pr);
     }
 
     if (etapas.length) {
