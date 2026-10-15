@@ -48,6 +48,8 @@ input.erro{border-color:var(--error)}
 .proc .num{font-size:13px;color:var(--muted);margin:0 0 14px;word-break:break-all}
 .tit{display:inline-block;background:var(--blue-soft);color:var(--blue);font-size:13px;font-weight:600;padding:5px 10px;border-radius:8px;margin:0 0 10px}
 .tit.pausado{background:var(--amber-bg);color:var(--amber)}
+.ouvir{float:right;border:1px solid var(--line);background:#fff;color:var(--blue);border-radius:8px;padding:5px 12px;font-size:14px;font-weight:600;cursor:pointer;margin:0 0 10px 8px}
+.ouvir:before{content:"F50A  "}
 .tit.fim{background:#EEF1F4;color:var(--muted)}
 .fr{margin:0 0 14px;font-size:17px}
 .precisa{background:var(--amber-bg);border-left:4px solid var(--amber);padding:10px 12px;font-size:15px;margin:0 0 14px;border-radius:0 8px 8px 0}
@@ -175,6 +177,18 @@ details p b{display:block;font-size:13px;color:var(--muted);font-weight:600;marg
 
   function voltar() { carregando.classList.remove("on"); secForm.hidden = false; btn.disabled = false; }
 
+  var falando = null;
+  function falar(botao, texto) {
+    var ss = window.speechSynthesis;
+    if (falando === botao) { ss.cancel(); falando = null; botao.textContent = "Ouvir"; return; }
+    ss.cancel(); document.querySelectorAll(".ouvir").forEach(function (b) { b.textContent = "Ouvir"; });
+    var u = new SpeechSynthesisUtterance(texto); u.lang = "pt-BR"; u.rate = 0.95;
+    var voz = ss.getVoices().filter(function (v) { return /pt[-_]BR/i.test(v.lang); })[0]; if (voz) u.voice = voz;
+    u.onend = u.onerror = function () { falando = null; botao.textContent = "Ouvir"; };
+    falando = botao; botao.textContent = "Parar"; ss.speak(u);
+  }
+  if (window.speechSynthesis) window.speechSynthesis.getVoices();
+
   function el(tag, cls, texto) { var e = document.createElement(tag); if (cls) e.className = cls; if (texto) e.textContent = texto; return e; }
 
   function mostrar(j) {
@@ -202,6 +216,11 @@ details p b{display:block;font-size:13px;color:var(--muted);font-weight:600;marg
     if (p.processo) c.appendChild(el("p", "num", "Processo " + p.processo));
     var fim = p.etapa >= 8;
     c.appendChild(el("span", "tit" + (p.pausado ? " pausado" : fim ? " fim" : ""), p.titulo));
+    if (window.speechSynthesis) {
+      var ouvir = el("button", "ouvir", "Ouvir"); ouvir.type = "button";
+      ouvir.addEventListener("click", function () { falar(ouvir, [p.apelido + ".", p.titulo + ".", p.oQue, p.significa, p.depois, p.precisa ? "O que fazer agora: " + p.precisa.replace(/\d\)\s*/g, "") : ""].filter(Boolean).join(" ")); });
+      c.appendChild(ouvir);
+    }
     c.appendChild(el("p", "fr", p.oQue));
 
     if (p.precisa) {
