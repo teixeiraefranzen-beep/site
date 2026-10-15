@@ -33,6 +33,8 @@ input.erro{border-color:var(--error)}
 .btn{display:flex;align-items:center;justify-content:center;width:100%;border:0;border-radius:10px;padding:16px;font-size:18px;font-weight:600;cursor:pointer;background:var(--blue);color:#fff;text-decoration:none;transition:opacity .2s}
 .btn:disabled{opacity:.6;cursor:default}
 .btn.sec{background:transparent;color:var(--blue);border:1px solid var(--line);margin-top:12px;font-weight:500;font-size:16px}
+.op{display:block;width:100%;text-align:left;border:1px solid var(--line);background:#fff;border-radius:10px;padding:13px 14px;font-size:17px;margin:0 0 8px;cursor:pointer}
+.op:hover{border-color:var(--blue);background:var(--blue-soft)}
 .msg{display:none;background:var(--error-bg);color:var(--error);border-radius:10px;padding:12px 14px;font-size:15px;margin:0 0 16px}
 .msg.on{display:block}
 .oi{font-size:24px;font-weight:600;margin:0 0 4px}
@@ -85,17 +87,17 @@ details p b{display:block;font-size:13px;color:var(--muted);font-weight:600;marg
 <main>
   <section id="form">
     <h1>Consulte seu processo</h1>
-    <p class="lead">Digite seu CPF e o código de acesso que o escritório enviou para você.</p>
+    <p class="lead">Digite seu CPF para ver a situação do seu processo.</p>
     <div class="msg" id="msg" role="alert"></div>
     <form class="card" id="f" novalidate>
       <div class="campo">
         <label for="cpf">CPF</label>
         <input id="cpf" name="cpf" inputmode="numeric" autocomplete="off" placeholder="000.000.000-00" maxlength="14" required>
       </div>
-      <div class="campo">
-        <label for="codigo">Código de acesso</label>
-        <input id="codigo" name="codigo" autocomplete="off" autocapitalize="characters" spellcheck="false" placeholder="6 letras e números" maxlength="12" required>
-        <p class="dica">Está no seu contrato ou na mensagem que o escritório mandou. Não tem? Peça pelo WhatsApp.</p>
+      <div class="campo" id="campoBanco" hidden>
+        <label>Contra qual banco é o seu processo?</label>
+        <div id="bancos"></div>
+        <p class="dica">Só para confirmar que é você. Se tiver mais de um, escolha qualquer um deles.</p>
       </div>
       <button class="btn" id="btn" type="submit">Consultar</button>
     </form>
@@ -111,12 +113,12 @@ details p b{display:block;font-size:13px;color:var(--muted);font-weight:600;marg
     <button class="btn sec" id="outro" type="button">Consultar outro CPF</button>
   </section>
 </main>
-<footer class="rodape">Quer falar sobre um <b>novo caso</b>, ou não encontrou sua resposta aqui? <a href="https://wa.me/555132112711?text=Ol%C3%A1!%20Consultei%20meu%20processo%20no%20site%20e%20n%C3%A3o%20encontrei%20a%20resposta%20para%3A%20">Fale com o escritório</a>.<br>Nada fica salvo no seu aparelho.</footer>
+<footer class="rodape">Nunca compartilhe este site com o CPF de outra pessoa.<br>Quer falar sobre um <b>novo caso</b>, ou não encontrou sua resposta aqui? <a href="https://wa.me/555132112711?text=Ol%C3%A1!%20Consultei%20meu%20processo%20no%20site%20e%20n%C3%A3o%20encontrei%20a%20resposta%20para%3A%20">Fale com o escritório</a>.<br>Nada fica salvo no seu aparelho.</footer>
 
 <script>
 (function () {
   var URL_API = document.querySelector('meta[name="consulta"]').content || "";
-  var f = document.getElementById("f"), cpf = document.getElementById("cpf"), cod = document.getElementById("codigo");
+  var f = document.getElementById("f"), cpf = document.getElementById("cpf"), campoBanco = document.getElementById("campoBanco"), bancos = document.getElementById("bancos");
   var btn = document.getElementById("btn"), msg = document.getElementById("msg");
   var secForm = document.getElementById("form"), secRes = document.getElementById("resultado"), carregando = document.getElementById("carregando");
 
@@ -125,7 +127,6 @@ details p b{display:block;font-size:13px;color:var(--muted);font-weight:600;marg
     cpf.value = d.replace(/(\d{3})(\d)/, "$1.$2").replace(/(\d{3})(\d)/, "$1.$2").replace(/(\d{3})(\d{1,2})$/, "$1-$2");
     limparErro();
   });
-  cod.addEventListener("input", function () { cod.value = cod.value.toUpperCase().replace(/[^A-Z0-9]/g, ""); limparErro(); });
 
   function cpfValido(d) {
     if (d.length !== 11 || /^(\d)\1+$/.test(d)) return false;
@@ -136,12 +137,12 @@ details p b{display:block;font-size:13px;color:var(--muted);font-weight:600;marg
     return true;
   }
   function erro(texto, campo) { msg.textContent = texto; msg.classList.add("on"); if (campo) { campo.classList.add("erro"); campo.focus(); } }
-  function limparErro() { msg.classList.remove("on"); cpf.classList.remove("erro"); cod.classList.remove("erro"); }
+  function limparErro() { msg.classList.remove("on"); cpf.classList.remove("erro"); }
 
   var TEXTOS = {
-    dados: "CPF ou código não conferem. Confira os dois e tente de novo. Se continuar, fale com o escritório pelo WhatsApp.",
+    dados: "Não encontramos processo com esse CPF e esse banco. Confira o CPF e tente de novo. Se continuar, fale com o escritório pelo WhatsApp.",
     bloqueado: "Muitas tentativas seguidas. Por segurança, aguarde 1 hora ou fale com o escritório pelo WhatsApp.",
-    invalido: "Preencha o CPF completo e o código de acesso.",
+    invalido: "Preencha o CPF completo.",
     servidor: "A consulta está indisponível no momento. Tente de novo em alguns minutos.",
     rede: "Não foi possível consultar agora. Verifique sua conexão e tente de novo.",
     link: "Este link de acesso não é mais válido. Peça um novo ao escritório pelo WhatsApp ou consulte com CPF e código.",
@@ -152,7 +153,8 @@ details p b{display:block;font-size:13px;color:var(--muted);font-weight:600;marg
     fetch(URL_API, { method: "POST", body: JSON.stringify(corpo), redirect: "follow" })
       .then(function (r) { return r.json(); })
       .then(function (j) {
-        if (!j.ok) { voltar(); return erro(TEXTOS[j.erro] || TEXTOS.servidor, j.erro === "dados" ? campoErro : null); }
+        if (!j.ok && j.erro === "banco") { voltar(); return perguntarBanco(j.opcoes || []); }
+        if (!j.ok) { voltar(); if (j.erro === "dados") erroDados(); return erro(TEXTOS[j.erro] || TEXTOS.servidor, j.erro === "dados" ? campoErro : null); }
         mostrar(j);
       })
       .catch(function () { voltar(); erro(TEXTOS.rede); });
@@ -166,12 +168,23 @@ details p b{display:block;font-size:13px;color:var(--muted);font-weight:600;marg
     limparErro();
     var d = cpf.value.replace(/\D/g, "");
     if (!cpfValido(d)) return erro("Digite um CPF válido, com 11 números.", cpf);
-    if (cod.value.length < 4) return erro("Digite o código de acesso que o escritório enviou.", cod);
     if (!URL_API) return erro(TEXTOS.servidor);
-    consultar({ cpf: d, codigo: cod.value }, cod);
+    consultar({ cpf: d }, cpf);
   });
 
+  function perguntarBanco(opcoes) {
+    bancos.textContent = "";
+    opcoes.forEach(function (nome) {
+      var b = document.createElement("button"); b.type = "button"; b.className = "op"; b.textContent = nome;
+      b.addEventListener("click", function () { limparErro(); consultar({ cpf: cpf.value.replace(/\D/g, ""), banco: nome }, cpf); });
+      bancos.appendChild(b);
+    });
+    campoBanco.hidden = false; btn.hidden = true; cpf.readOnly = true;
+    bancos.firstChild && bancos.firstChild.focus();
+  }
+
   function voltar() { carregando.classList.remove("on"); secForm.hidden = false; btn.disabled = false; }
+  function erroDados() { campoBanco.hidden = true; btn.hidden = false; cpf.readOnly = false; }
 
   function el(tag, cls, texto) { var e = document.createElement(tag); if (cls) e.className = cls; if (texto) e.textContent = texto; return e; }
 
@@ -242,7 +255,7 @@ details p b{display:block;font-size:13px;color:var(--muted);font-weight:600;marg
   }
 
   document.getElementById("outro").addEventListener("click", function () {
-    secRes.hidden = true; cod.value = ""; cpf.value = ""; secForm.hidden = false; cpf.focus();
+    secRes.hidden = true; cpf.value = ""; cpf.readOnly = false; campoBanco.hidden = true; btn.hidden = false; secForm.hidden = false; cpf.focus();
     if (location.search) history.replaceState(null, "", location.pathname);
   });
 })();
