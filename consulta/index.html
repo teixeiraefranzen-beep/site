@@ -36,6 +36,8 @@ input.erro{border-color:var(--error)}
 .msg{display:none;background:var(--error-bg);color:var(--error);border-radius:10px;padding:12px 14px;font-size:15px;margin:0 0 16px}
 .msg.on{display:block}
 .oi{font-size:24px;font-weight:600;margin:0 0 4px}
+.calma{background:#EAF3DE;color:#27500A;border-radius:12px;padding:14px 16px;font-size:15px;margin:0 0 18px;line-height:1.5}
+.calma b{display:block;font-size:16px;margin-bottom:2px}
 .sub{color:var(--muted);font-size:15px;margin:0 0 18px}
 .proc{background:var(--card);border:1px solid var(--line);border-radius:var(--radius);padding:20px;margin-bottom:16px}
 .proc .ap{font-weight:600;font-size:18px;margin:0 0 2px}
@@ -104,11 +106,12 @@ details p b{display:block;font-size:13px;color:var(--muted);font-weight:600;marg
   <section id="resultado" hidden>
     <p class="oi" id="oi"></p>
     <p class="sub" id="subtitulo"></p>
+    <div class="calma"><b>Você pode ficar tranquilo.</b> Nós acompanhamos seus processos toda semana. Se acontecer algo importante, avisamos você pelo WhatsApp. Você não precisa ficar conferindo nem fazer nada agora.</div>
     <div id="lista"></div>
     <button class="btn sec" id="outro" type="button">Consultar outro CPF</button>
   </section>
 </main>
-<footer class="rodape">As respostas acima são atualizadas toda semana pelo escritório.<br>Quer falar sobre um <b>novo caso</b>, ou não encontrou sua resposta aqui? <a href="https://wa.me/555132112711?text=Ol%C3%A1!%20Consultei%20meu%20processo%20no%20site%20e%20n%C3%A3o%20encontrei%20a%20resposta%20para%3A%20">Fale com o escritório</a>.<br>Nada fica salvo no seu aparelho.</footer>
+<footer class="rodape">Quer falar sobre um <b>novo caso</b>, ou não encontrou sua resposta aqui? <a href="https://wa.me/555132112711?text=Ol%C3%A1!%20Consultei%20meu%20processo%20no%20site%20e%20n%C3%A3o%20encontrei%20a%20resposta%20para%3A%20">Fale com o escritório</a>.<br>Nada fica salvo no seu aparelho.</footer>
 
 <script>
 (function () {
@@ -176,7 +179,7 @@ details p b{display:block;font-size:13px;color:var(--muted);font-weight:600;marg
     carregando.classList.remove("on"); btn.disabled = false;
     document.getElementById("oi").textContent = j.nome ? "Olá, " + j.nome : "Olá";
     var n = j.processos.length;
-    document.getElementById("subtitulo").textContent = n === 1 ? "Esta é a situação atual do seu processo, em linguagem simples." : "Esta é a situação atual dos seus " + n + " processos, em linguagem simples.";
+    document.getElementById("subtitulo").textContent = n === 1 ? "Aqui está a situação do seu processo, explicada de forma simples." : "Aqui está a situação dos seus " + n + " processos, explicada de forma simples.";
     var lista = document.getElementById("lista"); lista.textContent = "";
     if (!n) {
       lista.appendChild(el("div", "vazio", "Ainda não há processo cadastrado para consulta neste CPF. Fale com o escritório pelo WhatsApp."));
