@@ -73,6 +73,7 @@ details p b{display:block;font-size:13px;color:var(--muted);font-weight:600;marg
 .faq p{margin:10px 0 0}
 .faq p span{display:block;font-weight:600;font-size:15px}
 .dt{font-size:13px;color:var(--muted);margin:14px 0 0}
+#encerrados{border:0;margin:4px 0 8px}#encerrados summary{font-size:15px;color:var(--muted);padding:8px 0}
 .vazio{background:var(--card);border:1px dashed var(--line);border-radius:var(--radius);padding:20px;color:var(--muted);text-align:center}
 .rodape{max-width:560px;margin:0 auto;padding:0 16px 28px;font-size:13px;color:var(--muted);text-align:center}
 .rodape a{color:var(--muted)}
@@ -96,9 +97,9 @@ details p b{display:block;font-size:13px;color:var(--muted);font-weight:600;marg
         <input id="cpf" name="cpf" inputmode="numeric" autocomplete="off" placeholder="000.000.000-00" maxlength="14" required>
       </div>
       <div class="campo" id="campoBanco" hidden>
-        <label>Contra qual banco é o seu processo?</label>
+        <label>Para sua segurança, confirme: contra qual banco é o seu processo?</label>
         <div id="bancos"></div>
-        <p class="dica">Só para confirmar que é você. Se tiver mais de um, escolha qualquer um deles.</p>
+        <p class="dica">Você verá os processos contra o banco escolhido. Se tiver processo contra outro banco, dá para ver depois.</p>
       </div>
       <button class="btn" id="btn" type="submit">Consultar</button>
     </form>
@@ -109,8 +110,10 @@ details p b{display:block;font-size:13px;color:var(--muted);font-weight:600;marg
   <section id="resultado" hidden>
     <p class="oi" id="oi"></p>
     <p class="sub" id="subtitulo"></p>
-    <div class="calma"><b>Você pode ficar tranquilo.</b> Nós acompanhamos seus processos toda semana. Se acontecer algo importante, avisamos você pelo WhatsApp. Você não precisa ficar conferindo nem fazer nada agora.</div>
+    <div class="calma"><b>Você pode ficar tranquilo.</b> Nós acompanhamos seu processo toda semana. Você não precisa fazer nada nem ficar conferindo: quando for necessário, nós procuramos você.</div>
     <div id="lista"></div>
+    <details id="encerrados" hidden><summary id="encerradosTitulo"></summary><div id="listaEncerrados"></div></details>
+    <button class="btn sec" id="outroBanco" type="button" hidden>Ver processos contra outro banco</button>
     <button class="btn sec" id="outro" type="button">Consultar outro CPF</button>
   </section>
 </main>
@@ -192,13 +195,19 @@ details p b{display:block;font-size:13px;color:var(--muted);font-weight:600;marg
   function mostrar(j) {
     carregando.classList.remove("on"); btn.disabled = false;
     document.getElementById("oi").textContent = j.nome ? "Olá, " + j.nome : "Olá";
-    var n = j.processos.length;
-    document.getElementById("subtitulo").textContent = n === 1 ? "Aqui está a situação do seu processo, explicada de forma simples." : "Aqui está a situação dos seus " + n + " processos, explicada de forma simples.";
+    var ativos = j.processos.filter(function (p) { return !p.encerrado; }), fechados = j.processos.filter(function (p) { return p.encerrado; });
+    var n = j.processos.length, contra = j.banco ? " contra " + j.banco : "";
+    document.getElementById("subtitulo").textContent = n === 1 ? "Aqui está a situação do seu processo" + contra + ", explicada de forma simples." : "Aqui está a situação dos seus " + n + " processos" + contra + ", explicada de forma simples.";
     var lista = document.getElementById("lista"); lista.textContent = "";
-    if (!n) {
-      lista.appendChild(el("div", "vazio", "Ainda não há processo cadastrado para consulta neste CPF. Fale com o escritório pelo WhatsApp."));
-    }
-    j.processos.forEach(function (p) { lista.appendChild(cartao(p, j.etapas || [])); });
+    if (!n) lista.appendChild(el("div", "vazio", "Ainda não há processo cadastrado para consulta neste CPF. Fale com o escritório pelo WhatsApp."));
+    (ativos.length ? ativos : fechados).forEach(function (p) { lista.appendChild(cartao(p, j.etapas || [])); });
+    var enc = document.getElementById("encerrados"), le = document.getElementById("listaEncerrados"); le.textContent = ""; enc.open = false;
+    if (ativos.length && fechados.length) {
+      document.getElementById("encerradosTitulo").textContent = "Processos já encerrados (" + fechados.length + ")";
+      fechados.forEach(function (p) { le.appendChild(cartao(p, j.etapas || [])); });
+      enc.hidden = false;
+    } else enc.hidden = true;
+    document.getElementById("outroBanco").hidden = !(j.banco && j.outrosBancos);
     secRes.hidden = false;
     window.scrollTo(0, 0);
   }
@@ -255,6 +264,9 @@ details p b{display:block;font-size:13px;color:var(--muted);font-weight:600;marg
     return c;
   }
 
+  document.getElementById("outroBanco").addEventListener("click", function () {
+    secRes.hidden = true; secForm.hidden = false; consultar({ cpf: cpf.value.replace(/\D/g, "") }, cpf);
+  });
   document.getElementById("outro").addEventListener("click", function () {
     secRes.hidden = true; cpf.value = ""; cpf.readOnly = false; campoBanco.hidden = true; btn.hidden = false; secForm.hidden = false; cpf.focus();
     if (location.search) history.replaceState(null, "", location.pathname);
