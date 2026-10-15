@@ -1,0 +1,246 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Consulte seu processo · Teixeira &amp; Franzen Advogados</title>
+<meta name="description" content="Área do cliente da Teixeira & Franzen Advogados: veja a situação do seu processo com o CPF e o código de acesso enviado pelo escritório.">
+<meta name="robots" content="noindex">
+<meta name="theme-color" content="#031E34">
+<meta name="consulta" content="https://script.google.com/macros/s/AKfycbyiadEQXuJTe32X6RyXhVcCjdQI2oCZGpzlo8HGGy_nlEKs0QQiP-G1Tp3rbOR2Mtc5/exec">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+:root{--navy:#031E34;--blue:#0060AC;--blue-soft:#E8F1FA;--paper:#F4F3EF;--card:#FFFFFF;--line:#D9DDE2;--muted:#5B6773;--error:#B42318;--error-bg:#FDF0EE;--green:#1f6b3a;--amber:#8a5a00;--amber-bg:#FDF6E7;--radius:14px}
+*{box-sizing:border-box}
+html,body{margin:0}
+body{font-family:"Inter",system-ui,-apple-system,"Segoe UI",sans-serif;background:var(--paper);color:var(--navy);font-size:17px;line-height:1.45;-webkit-font-smoothing:antialiased;min-height:100vh;display:flex;flex-direction:column}
+button,input{font:inherit;color:inherit}
+.top{background:#031F34;color:#fff}
+.top-in{max-width:560px;margin:0 auto;padding:16px;display:flex;align-items:center;gap:12px;min-height:60px}
+.brand{font-size:14px;font-weight:600;letter-spacing:.12em;text-transform:uppercase;color:#C1CDD8;text-decoration:none}
+main{max-width:560px;width:100%;margin:0 auto;padding:28px 16px 40px;flex:1}
+h1{font-size:28px;line-height:1.15;margin:0 0 8px;font-weight:600}
+.lead{color:var(--muted);margin:0 0 24px;font-size:16px}
+.card{background:var(--card);border:1px solid var(--line);border-radius:var(--radius);padding:20px}
+label{display:block;font-size:14px;font-weight:600;margin:0 0 6px}
+input{width:100%;border:1px solid var(--line);border-radius:10px;padding:14px;font-size:19px;background:#fff;outline:none;letter-spacing:.02em}
+input:focus{border-color:var(--blue);box-shadow:0 0 0 3px var(--blue-soft)}
+input.erro{border-color:var(--error)}
+.campo{margin-bottom:18px}
+.dica{font-size:13px;color:var(--muted);margin:6px 0 0}
+.btn{display:flex;align-items:center;justify-content:center;width:100%;border:0;border-radius:10px;padding:16px;font-size:18px;font-weight:600;cursor:pointer;background:var(--blue);color:#fff;text-decoration:none;transition:opacity .2s}
+.btn:disabled{opacity:.6;cursor:default}
+.btn.sec{background:transparent;color:var(--blue);border:1px solid var(--line);margin-top:12px;font-weight:500;font-size:16px}
+.btn.wa{background:#25D366;gap:10px;font-size:16px;padding:13px;margin-top:14px}
+.btn.wa svg{width:22px;height:22px;flex:none}
+.msg{display:none;background:var(--error-bg);color:var(--error);border-radius:10px;padding:12px 14px;font-size:15px;margin:0 0 16px}
+.msg.on{display:block}
+.oi{font-size:24px;font-weight:600;margin:0 0 4px}
+.sub{color:var(--muted);font-size:15px;margin:0 0 18px}
+.proc{background:var(--card);border:1px solid var(--line);border-radius:var(--radius);padding:20px;margin-bottom:16px}
+.proc .ap{font-weight:600;font-size:18px;margin:0 0 2px}
+.proc .num{font-size:13px;color:var(--muted);margin:0 0 14px;word-break:break-all}
+.tit{display:inline-block;background:var(--blue-soft);color:var(--blue);font-size:13px;font-weight:600;padding:5px 10px;border-radius:8px;margin:0 0 10px}
+.tit.pausado{background:var(--amber-bg);color:var(--amber)}
+.tit.fim{background:#EEF1F4;color:var(--muted)}
+.fr{margin:0 0 14px;font-size:17px}
+.precisa{background:var(--amber-bg);border-left:4px solid var(--amber);padding:10px 12px;font-size:15px;margin:0 0 14px;border-radius:0 8px 8px 0}
+.precisa b{display:block;color:var(--amber);font-size:13px;text-transform:uppercase;letter-spacing:.06em;margin-bottom:2px}
+.linha{display:flex;gap:4px;margin:0 0 6px}
+.linha i{flex:1;height:6px;border-radius:3px;background:#E3E7EB}
+.linha i.ok{background:var(--blue)}
+.linha i.atual{background:var(--blue);box-shadow:0 0 0 2px var(--blue-soft)}
+.linha.pausado i.atual{background:var(--amber)}
+.etapa{font-size:13px;color:var(--muted);margin:0 0 14px}
+.etapa b{color:var(--navy);font-weight:600}
+details{border-top:1px solid var(--line);padding:10px 0 0;margin-top:10px}
+summary{cursor:pointer;font-weight:600;font-size:15px;list-style:none;display:flex;justify-content:space-between;align-items:center}
+summary::-webkit-details-marker{display:none}
+summary:after{content:"+";font-size:20px;color:var(--blue);font-weight:400}
+details[open] summary:after{content:"–"}
+details p{margin:10px 0 0;font-size:15px}
+details p b{display:block;font-size:13px;color:var(--muted);font-weight:600;margin-bottom:2px}
+.mov{list-style:none;padding:0;margin:10px 0 0;font-size:14px}
+.mov li{display:flex;gap:10px;padding:6px 0;border-bottom:1px dashed var(--line)}
+.mov li:last-child{border:0}
+.mov time{color:var(--muted);flex:none;width:86px}
+.mov small{display:block;color:var(--muted);font-size:12px}
+.faq p{margin:10px 0 0}
+.faq p span{display:block;font-weight:600;font-size:15px}
+.dt{font-size:13px;color:var(--muted);margin:14px 0 0}
+.vazio{background:var(--card);border:1px dashed var(--line);border-radius:var(--radius);padding:20px;color:var(--muted);text-align:center}
+.rodape{max-width:560px;margin:0 auto;padding:0 16px 28px;font-size:13px;color:var(--muted);text-align:center}
+.rodape a{color:var(--muted)}
+#carregando{display:none;text-align:center;color:var(--muted);padding:24px 0}
+#carregando.on{display:block}
+.pisca{display:inline-block;width:10px;height:10px;border-radius:50%;background:var(--blue);animation:p 1s infinite alternate;margin-right:6px}
+@keyframes p{from{opacity:.25}to{opacity:1}}
+@media (prefers-reduced-motion:reduce){.pisca{animation:none}}
+</style>
+</head>
+<body>
+<header class="top"><div class="top-in"><a class="brand" href="/">Teixeira &amp; Franzen · Advogados</a></div></header>
+<main>
+  <section id="form">
+    <h1>Consulte seu processo</h1>
+    <p class="lead">Digite seu CPF e o código de acesso que o escritório enviou para você.</p>
+    <div class="msg" id="msg" role="alert"></div>
+    <form class="card" id="f" novalidate>
+      <div class="campo">
+        <label for="cpf">CPF</label>
+        <input id="cpf" name="cpf" inputmode="numeric" autocomplete="off" placeholder="000.000.000-00" maxlength="14" required>
+      </div>
+      <div class="campo">
+        <label for="codigo">Código de acesso</label>
+        <input id="codigo" name="codigo" autocomplete="off" autocapitalize="characters" spellcheck="false" placeholder="6 letras e números" maxlength="12" required>
+        <p class="dica">Está no seu contrato ou na mensagem que o escritório mandou. Não tem? Peça pelo WhatsApp.</p>
+      </div>
+      <button class="btn" id="btn" type="submit">Consultar</button>
+    </form>
+  </section>
+
+  <div id="carregando"><span class="pisca"></span>Consultando…</div>
+
+  <section id="resultado" hidden>
+    <p class="oi" id="oi"></p>
+    <p class="sub" id="subtitulo"></p>
+    <div id="lista"></div>
+    <button class="btn sec" id="outro" type="button">Consultar outro CPF</button>
+  </section>
+</main>
+<footer class="rodape">Perdeu o código ou não encontrou seu processo? Fale com o escritório pelo WhatsApp <a href="https://wa.me/555132112711">(51) 3211-2711</a>.<br>Nada fica salvo no seu aparelho.</footer>
+
+<script>
+(function () {
+  var URL_API = document.querySelector('meta[name="consulta"]').content || "";
+  var WA = "https://wa.me/555132112711?text=";
+  var ICONE_WA = '<svg viewBox="0 0 32 32" aria-hidden="true"><path fill="#fff" d="M16 3C8.8 3 3 8.7 3 15.8c0 2.3.6 4.5 1.8 6.5L3 29l6.9-1.8c1.9 1 4 1.6 6.1 1.6 7.2 0 13-5.7 13-12.8S23.2 3 16 3zm0 23.4c-1.9 0-3.8-.5-5.4-1.5l-.4-.2-4.1 1.1 1.1-4-.3-.4c-1.1-1.7-1.6-3.6-1.6-5.6 0-5.9 4.9-10.7 10.8-10.7s10.8 4.8 10.8 10.7S21.9 26.4 16 26.4zm5.9-8c-.3-.2-1.9-.9-2.2-1s-.5-.2-.7.2-.8 1-1 1.2-.4.2-.7.1c-.3-.2-1.4-.5-2.6-1.6-1-.9-1.6-1.9-1.8-2.2s0-.5.1-.6l.5-.6c.2-.2.2-.3.3-.6.1-.2 0-.4 0-.6l-1-2.4c-.3-.6-.5-.5-.7-.5h-.6c-.2 0-.6.1-.9.4s-1.2 1.1-1.2 2.7 1.2 3.2 1.4 3.4c.2.2 2.4 3.6 5.8 5 .8.3 1.4.5 1.9.7.8.3 1.5.2 2.1.1.6-.1 1.9-.8 2.2-1.5s.3-1.4.2-1.5c-.1-.2-.3-.3-.6-.4z"/></svg>';
+  var f = document.getElementById("f"), cpf = document.getElementById("cpf"), cod = document.getElementById("codigo");
+  var btn = document.getElementById("btn"), msg = document.getElementById("msg");
+  var secForm = document.getElementById("form"), secRes = document.getElementById("resultado"), carregando = document.getElementById("carregando");
+
+  cpf.addEventListener("input", function () {
+    var d = cpf.value.replace(/\D/g, "").slice(0, 11);
+    cpf.value = d.replace(/(\d{3})(\d)/, "$1.$2").replace(/(\d{3})(\d)/, "$1.$2").replace(/(\d{3})(\d{1,2})$/, "$1-$2");
+    limparErro();
+  });
+  cod.addEventListener("input", function () { cod.value = cod.value.toUpperCase().replace(/[^A-Z0-9]/g, ""); limparErro(); });
+
+  function cpfValido(d) {
+    if (d.length !== 11 || /^(\d)\1+$/.test(d)) return false;
+    for (var t = 9; t < 11; t++) {
+      var s = 0; for (var i = 0; i < t; i++) s += d[i] * (t + 1 - i);
+      if (((s * 10) % 11) % 10 != d[t]) return false;
+    }
+    return true;
+  }
+  function erro(texto, campo) { msg.textContent = texto; msg.classList.add("on"); if (campo) { campo.classList.add("erro"); campo.focus(); } }
+  function limparErro() { msg.classList.remove("on"); cpf.classList.remove("erro"); cod.classList.remove("erro"); }
+
+  var TEXTOS = {
+    dados: "CPF ou código não conferem. Confira os dois e tente de novo. Se continuar, fale com o escritório pelo WhatsApp.",
+    bloqueado: "Muitas tentativas seguidas. Por segurança, aguarde 1 hora ou fale com o escritório pelo WhatsApp.",
+    invalido: "Preencha o CPF completo e o código de acesso.",
+    servidor: "A consulta está indisponível no momento. Tente de novo em alguns minutos.",
+    rede: "Não foi possível consultar agora. Verifique sua conexão e tente de novo.",
+  };
+
+  f.addEventListener("submit", function (ev) {
+    ev.preventDefault();
+    limparErro();
+    var d = cpf.value.replace(/\D/g, "");
+    if (!cpfValido(d)) return erro("Digite um CPF válido, com 11 números.", cpf);
+    if (cod.value.length < 4) return erro("Digite o código de acesso que o escritório enviou.", cod);
+    if (!URL_API) return erro(TEXTOS.servidor);
+    btn.disabled = true; secForm.hidden = true; carregando.classList.add("on");
+    fetch(URL_API, { method: "POST", body: JSON.stringify({ cpf: d, codigo: cod.value }), redirect: "follow" })
+      .then(function (r) { return r.json(); })
+      .then(function (j) {
+        if (!j.ok) { voltar(); return erro(TEXTOS[j.erro] || TEXTOS.servidor, j.erro === "dados" ? cod : null); }
+        mostrar(j);
+      })
+      .catch(function () { voltar(); erro(TEXTOS.rede); });
+  });
+
+  function voltar() { carregando.classList.remove("on"); secForm.hidden = false; btn.disabled = false; }
+
+  function el(tag, cls, texto) { var e = document.createElement(tag); if (cls) e.className = cls; if (texto) e.textContent = texto; return e; }
+
+  function mostrar(j) {
+    carregando.classList.remove("on"); btn.disabled = false;
+    document.getElementById("oi").textContent = j.nome ? "Olá, " + j.nome : "Olá";
+    var n = j.processos.length;
+    document.getElementById("subtitulo").textContent = n === 1 ? "Esta é a situação atual do seu processo, em linguagem simples." : "Esta é a situação atual dos seus " + n + " processos, em linguagem simples.";
+    var lista = document.getElementById("lista"); lista.textContent = "";
+    if (!n) {
+      lista.appendChild(el("div", "vazio", "Ainda não há processo cadastrado para consulta neste CPF. Fale com o escritório pelo WhatsApp."));
+    }
+    j.processos.forEach(function (p) { lista.appendChild(cartao(p, j.etapas || [])); });
+    secRes.hidden = false;
+    window.scrollTo(0, 0);
+  }
+
+  function cartao(p, etapas) {
+    var c = el("article", "proc");
+    c.appendChild(el("p", "ap", p.apelido));
+    if (p.processo) c.appendChild(el("p", "num", "Processo " + p.processo));
+    var fim = p.etapa >= 8;
+    c.appendChild(el("span", "tit" + (p.pausado ? " pausado" : fim ? " fim" : ""), p.titulo));
+    c.appendChild(el("p", "fr", p.oQue));
+
+    if (p.precisa) {
+      var pr = el("div", "precisa"); pr.appendChild(el("b", "", "Precisamos de você")); pr.appendChild(document.createTextNode(p.precisa)); c.appendChild(pr);
+    }
+
+    if (etapas.length) {
+      var linha = el("div", "linha" + (p.pausado ? " pausado" : ""));
+      etapas.forEach(function (nome, i) { var seg = el("i"); if (i + 1 < p.etapa) seg.className = "ok"; else if (i + 1 === p.etapa) seg.className = "atual"; linha.appendChild(seg); });
+      c.appendChild(linha);
+      var et = el("p", "etapa"); et.appendChild(document.createTextNode("Etapa " + p.etapa + " de " + etapas.length + ": "));
+      et.appendChild(el("b", "", etapas[p.etapa - 1] + (p.pausado ? " (pausado)" : "")));
+      if (p.ultimaMov) et.appendChild(document.createTextNode(" · última movimentação " + p.ultimaMov));
+      c.appendChild(et);
+    }
+
+    if (p.significa || p.depois) {
+      var d1 = el("details"); d1.appendChild(el("summary", "", "Entenda esta etapa"));
+      if (p.significa) { var a = el("p"); a.appendChild(el("b", "", "O que isso significa para você")); a.appendChild(document.createTextNode(p.significa)); d1.appendChild(a); }
+      if (p.depois) { var b = el("p"); b.appendChild(el("b", "", "O que vem depois")); b.appendChild(document.createTextNode(p.depois)); d1.appendChild(b); }
+      c.appendChild(d1);
+    }
+
+    if (p.movimentos && p.movimentos.length) {
+      var d2 = el("details"); d2.appendChild(el("summary", "", "Últimas movimentações"));
+      var ul = el("ul", "mov");
+      p.movimentos.forEach(function (m) {
+        var li = el("li"); li.appendChild(el("time", "", m.data)); var tx = el("span", "", m.texto);
+        if (m.original && m.original !== m.texto) tx.appendChild(el("small", "", m.original));
+        li.appendChild(tx); ul.appendChild(li);
+      });
+      d2.appendChild(ul);
+      d2.appendChild(el("p", "", "Muitas movimentações são burocráticas e não mudam a situação do processo."));
+      c.appendChild(d2);
+    }
+
+    if (p.perguntas && p.perguntas.length) {
+      var d3 = el("details", "faq"); d3.appendChild(el("summary", "", "Perguntas frequentes"));
+      p.perguntas.forEach(function (q) { var x = el("p"); x.appendChild(el("span", "", q.p)); x.appendChild(document.createTextNode(q.r)); d3.appendChild(x); });
+      c.appendChild(d3);
+    }
+
+    var wa = el("a", "btn wa"); wa.href = WA + encodeURIComponent("Olá! Consultei no site o processo \"" + p.apelido + "\" (" + p.titulo + ") e tenho uma dúvida: ");
+    wa.innerHTML = ICONE_WA; wa.appendChild(document.createTextNode("Tirar uma dúvida sobre este processo"));
+    c.appendChild(wa);
+    if (p.atualizadoEm) c.appendChild(el("p", "dt", "Conferido pelo escritório em " + p.atualizadoEm + ". As informações são atualizadas toda semana."));
+    return c;
+  }
+
+  document.getElementById("outro").addEventListener("click", function () {
+    secRes.hidden = true; cod.value = ""; cpf.value = ""; secForm.hidden = false; cpf.focus();
+  });
+})();
+</script>
+</body>
+</html>
