@@ -97,10 +97,6 @@ details p b{display:block;font-size:13px;color:var(--muted);font-weight:600;marg
         <label for="cpf">CPF</label>
         <input id="cpf" name="cpf" inputmode="numeric" autocomplete="off" placeholder="000.000.000-00" maxlength="14" required>
       </div>
-      <div class="campo" id="campoBanco" hidden>
-        <label>Para sua segurança, confirme: contra quem é o seu processo?</label>
-        <p class="dica" style="margin:0 0 10px">Toque só no banco ou empresa do seu processo. Os outros nomes da lista estão aí por segurança e não são processos seus.</p>
-        <div id="bancos"></div>
         <p class="dica">Se tiver processo contra mais de um banco ou empresa, escolha um; os outros você vê depois.</p>
       </div>
       <button class="btn" id="btn" type="submit">Consultar</button>
@@ -115,7 +111,6 @@ details p b{display:block;font-size:13px;color:var(--muted);font-weight:600;marg
     <div class="calma"><b>Você pode ficar tranquilo.</b> Nós acompanhamos seu processo toda semana. Você não precisa fazer nada nem ficar conferindo: quando for necessário, nós procuramos você.</div>
     <div id="lista"></div>
     <details id="encerrados" hidden><summary id="encerradosTitulo"></summary><div id="listaEncerrados"></div></details>
-    <button class="btn sec" id="outroBanco" type="button" hidden>Ver meus outros processos</button>
     <button class="btn sec" id="outro" type="button">Consultar outro CPF</button>
   </section>
 </main>
@@ -124,7 +119,7 @@ details p b{display:block;font-size:13px;color:var(--muted);font-weight:600;marg
 <script>
 (function () {
   var URL_API = document.querySelector('meta[name="consulta"]').content || "";
-  var f = document.getElementById("f"), cpf = document.getElementById("cpf"), campoBanco = document.getElementById("campoBanco"), bancos = document.getElementById("bancos");
+  var f = document.getElementById("f"), cpf = document.getElementById("cpf");
   var btn = document.getElementById("btn"), msg = document.getElementById("msg");
   var secForm = document.getElementById("form"), secRes = document.getElementById("resultado"), carregando = document.getElementById("carregando");
 
@@ -146,7 +141,7 @@ details p b{display:block;font-size:13px;color:var(--muted);font-weight:600;marg
   function limparErro() { msg.classList.remove("on"); cpf.classList.remove("erro"); }
 
   var TEXTOS = {
-    dados: "Não encontramos processo com esse CPF e essa escolha. Confira o CPF e tente de novo. Se continuar, fale com o escritório pelo WhatsApp.",
+    dados: "Não encontramos processo com esse CPF. Confira os números e tente de novo. Se continuar, fale com o escritório pelo WhatsApp.",
     bloqueado: "Muitas tentativas seguidas. Por segurança, aguarde 1 hora ou fale com o escritório pelo WhatsApp.",
     invalido: "Preencha o CPF completo.",
     servidor: "A consulta está indisponível no momento. Tente de novo em alguns minutos.",
@@ -159,8 +154,7 @@ details p b{display:block;font-size:13px;color:var(--muted);font-weight:600;marg
     fetch(URL_API, { method: "POST", body: JSON.stringify(corpo), redirect: "follow" })
       .then(function (r) { return r.json(); })
       .then(function (j) {
-        if (!j.ok && j.erro === "banco") { voltar(); return perguntarBanco(j.opcoes || []); }
-        if (!j.ok) { voltar(); if (j.erro === "dados") erroDados(); return erro(TEXTOS[j.erro] || TEXTOS.servidor, j.erro === "dados" ? campoErro : null); }
+        if (!j.ok) { voltar(); return erro(TEXTOS[j.erro] || TEXTOS.servidor, j.erro === "dados" ? campoErro : null); }
         mostrar(j);
       })
       .catch(function () { voltar(); erro(TEXTOS.rede); });
@@ -178,19 +172,8 @@ details p b{display:block;font-size:13px;color:var(--muted);font-weight:600;marg
     consultar({ cpf: d }, cpf);
   });
 
-  function perguntarBanco(opcoes) {
-    bancos.textContent = "";
-    opcoes.forEach(function (nome) {
-      var b = document.createElement("button"); b.type = "button"; b.className = "op"; b.textContent = nome;
-      b.addEventListener("click", function () { limparErro(); consultar({ cpf: cpf.value.replace(/\D/g, ""), banco: nome }, cpf); });
-      bancos.appendChild(b);
-    });
-    campoBanco.hidden = false; btn.hidden = true; cpf.readOnly = true;
-    bancos.firstChild && bancos.firstChild.focus();
-  }
 
   function voltar() { carregando.classList.remove("on"); secForm.hidden = false; btn.disabled = false; }
-  function erroDados() { campoBanco.hidden = true; btn.hidden = false; cpf.readOnly = false; }
 
   function el(tag, cls, texto) { var e = document.createElement(tag); if (cls) e.className = cls; if (texto) e.textContent = texto; return e; }
 
@@ -198,7 +181,7 @@ details p b{display:block;font-size:13px;color:var(--muted);font-weight:600;marg
     carregando.classList.remove("on"); btn.disabled = false;
     document.getElementById("oi").textContent = j.nome ? "Olá, " + j.nome : "Olá";
     var ativos = j.processos.filter(function (p) { return !p.encerrado; }), fechados = j.processos.filter(function (p) { return p.encerrado; });
-    var n = j.processos.length, contra = j.banco ? " contra " + j.banco : "";
+    var n = j.processos.length, contra = "";
     document.getElementById("subtitulo").textContent = n === 1 ? "Aqui está a situação do seu processo" + contra + ", explicada de forma simples." : "Aqui está a situação dos seus " + n + " processos" + contra + ", explicada de forma simples.";
     var lista = document.getElementById("lista"); lista.textContent = "";
     if (!n) lista.appendChild(el("div", "vazio", "Ainda não há processo cadastrado para consulta neste CPF. Fale com o escritório pelo WhatsApp."));
@@ -209,7 +192,6 @@ details p b{display:block;font-size:13px;color:var(--muted);font-weight:600;marg
       fechados.forEach(function (p) { le.appendChild(cartao(p, j.etapas || [])); });
       enc.hidden = false;
     } else enc.hidden = true;
-    document.getElementById("outroBanco").hidden = !(j.banco && j.outrosBancos);
     secRes.hidden = false;
     window.scrollTo(0, 0);
   }
@@ -271,11 +253,8 @@ details p b{display:block;font-size:13px;color:var(--muted);font-weight:600;marg
     return c;
   }
 
-  document.getElementById("outroBanco").addEventListener("click", function () {
-    secRes.hidden = true; secForm.hidden = false; consultar({ cpf: cpf.value.replace(/\D/g, "") }, cpf);
-  });
   document.getElementById("outro").addEventListener("click", function () {
-    secRes.hidden = true; cpf.value = ""; cpf.readOnly = false; campoBanco.hidden = true; btn.hidden = false; secForm.hidden = false; cpf.focus();
+    secRes.hidden = true; cpf.value = ""; secForm.hidden = false; cpf.focus();
     if (location.search) history.replaceState(null, "", location.pathname);
   });
 })();
