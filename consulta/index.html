@@ -222,7 +222,10 @@ details p b{display:block;font-size:13px;color:var(--muted);font-weight:600;marg
     c.appendChild(el("p", "fr", p.oQue));
 
     if (p.precisa) {
-      var pr = el("div", "precisa"); pr.appendChild(el("b", "", "Precisamos de você")); pr.appendChild(document.createTextNode(p.precisa));
+      var pr = el("div", "precisa"); pr.appendChild(el("b", "", "O que fazer agora"));
+      var passos = p.precisa.split(/\s(?=\d\))/);
+      if (passos.length > 1) { var ol = el("ol"); ol.style.margin = "4px 0 0"; ol.style.paddingLeft = "20px"; passos.forEach(function (t) { ol.appendChild(el("li", "", t.replace(/^\d\)\s*/, ""))); }); pr.appendChild(ol); }
+      else pr.appendChild(document.createTextNode(p.precisa));
       var wa = el("a", "btn wa"); wa.href = "https://wa.me/555132112711?text=" + encodeURIComponent("Olá! Sobre o processo " + p.apelido + " (" + p.processo + "): ");
       wa.textContent = "Falar com o escritório sobre este processo"; pr.appendChild(wa); c.appendChild(pr);
     }
