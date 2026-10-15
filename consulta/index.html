@@ -145,7 +145,22 @@ details p b{display:block;font-size:13px;color:var(--muted);font-weight:600;marg
     invalido: "Preencha o CPF completo e o código de acesso.",
     servidor: "A consulta está indisponível no momento. Tente de novo em alguns minutos.",
     rede: "Não foi possível consultar agora. Verifique sua conexão e tente de novo.",
+    link: "Este link de acesso não é mais válido. Peça um novo ao escritório pelo WhatsApp ou consulte com CPF e código.",
   };
+
+  function consultar(corpo, campoErro) {
+    btn.disabled = true; secForm.hidden = true; carregando.classList.add("on");
+    fetch(URL_API, { method: "POST", body: JSON.stringify(corpo), redirect: "follow" })
+      .then(function (r) { return r.json(); })
+      .then(function (j) {
+        if (!j.ok) { voltar(); return erro(TEXTOS[j.erro] || TEXTOS.servidor, j.erro === "dados" ? campoErro : null); }
+        mostrar(j);
+      })
+      .catch(function () { voltar(); erro(TEXTOS.rede); });
+  }
+
+  var token = (new URLSearchParams(location.search).get("t") || "").toUpperCase().replace(/[^A-Z0-9]/g, "");
+  if (token && URL_API) consultar({ token: token }, null);
 
   f.addEventListener("submit", function (ev) {
     ev.preventDefault();
@@ -154,14 +169,7 @@ details p b{display:block;font-size:13px;color:var(--muted);font-weight:600;marg
     if (!cpfValido(d)) return erro("Digite um CPF válido, com 11 números.", cpf);
     if (cod.value.length < 4) return erro("Digite o código de acesso que o escritório enviou.", cod);
     if (!URL_API) return erro(TEXTOS.servidor);
-    btn.disabled = true; secForm.hidden = true; carregando.classList.add("on");
-    fetch(URL_API, { method: "POST", body: JSON.stringify({ cpf: d, codigo: cod.value }), redirect: "follow" })
-      .then(function (r) { return r.json(); })
-      .then(function (j) {
-        if (!j.ok) { voltar(); return erro(TEXTOS[j.erro] || TEXTOS.servidor, j.erro === "dados" ? cod : null); }
-        mostrar(j);
-      })
-      .catch(function () { voltar(); erro(TEXTOS.rede); });
+    consultar({ cpf: d, codigo: cod.value }, cod);
   });
 
   function voltar() { carregando.classList.remove("on"); secForm.hidden = false; btn.disabled = false; }
@@ -239,6 +247,7 @@ details p b{display:block;font-size:13px;color:var(--muted);font-weight:600;marg
 
   document.getElementById("outro").addEventListener("click", function () {
     secRes.hidden = true; cod.value = ""; cpf.value = ""; secForm.hidden = false; cpf.focus();
+    if (location.search) history.replaceState(null, "", location.pathname);
   });
 })();
 </script>
