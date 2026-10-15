@@ -97,9 +97,9 @@ details p b{display:block;font-size:13px;color:var(--muted);font-weight:600;marg
         <input id="cpf" name="cpf" inputmode="numeric" autocomplete="off" placeholder="000.000.000-00" maxlength="14" required>
       </div>
       <div class="campo" id="campoBanco" hidden>
-        <label>Para sua segurança, confirme: contra qual banco é o seu processo?</label>
+        <label>Para sua segurança, confirme: contra quem é o seu processo?</label>
         <div id="bancos"></div>
-        <p class="dica">Você verá os processos contra o banco escolhido. Se tiver processo contra outro banco, dá para ver depois.</p>
+        <p class="dica">Você verá os processos contra quem escolher. Se tiver processo contra outra empresa ou pessoa, dá para ver depois.</p>
       </div>
       <button class="btn" id="btn" type="submit">Consultar</button>
     </form>
@@ -113,7 +113,7 @@ details p b{display:block;font-size:13px;color:var(--muted);font-weight:600;marg
     <div class="calma"><b>Você pode ficar tranquilo.</b> Nós acompanhamos seu processo toda semana. Você não precisa fazer nada nem ficar conferindo: quando for necessário, nós procuramos você.</div>
     <div id="lista"></div>
     <details id="encerrados" hidden><summary id="encerradosTitulo"></summary><div id="listaEncerrados"></div></details>
-    <button class="btn sec" id="outroBanco" type="button" hidden>Ver processos contra outro banco</button>
+    <button class="btn sec" id="outroBanco" type="button" hidden>Ver meus outros processos</button>
     <button class="btn sec" id="outro" type="button">Consultar outro CPF</button>
   </section>
 </main>
@@ -144,7 +144,7 @@ details p b{display:block;font-size:13px;color:var(--muted);font-weight:600;marg
   function limparErro() { msg.classList.remove("on"); cpf.classList.remove("erro"); }
 
   var TEXTOS = {
-    dados: "Não encontramos processo com esse CPF e esse banco. Confira o CPF e tente de novo. Se continuar, fale com o escritório pelo WhatsApp.",
+    dados: "Não encontramos processo com esse CPF e essa escolha. Confira o CPF e tente de novo. Se continuar, fale com o escritório pelo WhatsApp.",
     bloqueado: "Muitas tentativas seguidas. Por segurança, aguarde 1 hora ou fale com o escritório pelo WhatsApp.",
     invalido: "Preencha o CPF completo.",
     servidor: "A consulta está indisponível no momento. Tente de novo em alguns minutos.",
